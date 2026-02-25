@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Collective — Family Experience Demo</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f0f0; overflow-x: hidden; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+var PARENT = "Helena";
+var STUDENT = "Sofia";
+var TEACHER = "Ana";
+var GROUP = "G2";
+
+var CAPTION_PT = "Esta semana focamos em ampliar o vocabulário dentro do nosso tema e usar as palavras em frases simples. A Sofia já consegue reconhecer e falar as novas palavras com mais segurança, especialmente durante as atividades em grupo. Agora estamos incentivando que ela use essas palavras de forma mais independente em pequenas falas e interações.";
+
+var MOMENTS = [
+  { label: "Circle time", desc: "Participação oral", bg: "linear-gradient(135deg, #2d5a3f, #1a3a2a)", emoji: "👦" },
+  { label: "Nature exploration", desc: "Vocabulário novo", bg: "linear-gradient(135deg, #3a4a6c, #1f2d4a)", emoji: "🌿" },
+  { label: "Story time", desc: "Expressão criativa", bg: "linear-gradient(135deg, #5a3a5c, #2d1a2e)", emoji: "📖" },
+  { label: "Group work", desc: "Colaboração", bg: "linear-gradient(135deg, #4a5c2d, #2a3a1a)", emoji: "👫" },
+  { label: "Free play", desc: "Inglês espontâneo", bg: "linear-gradient(135deg, #5c4a2d, #3a2d1a)", emoji: "🎨" },
+];
+
+function FamilySim() {
+  var scrollRef = useRef(null);
+  var timerRef = useRef(null);
+
+  var _phase = useState("step1");
+  var phase = _phase[0];
+  var setPhase = _phase[1];
+
+  var scrollDown = function () {
+    if (scrollRef.current) {
+      requestAnimationFrame(function () {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      });
+    }
+  };
+
+  useEffect(scrollDown, [phase]);
+  useEffect(function () { return function () { if (timerRef.current) clearTimeout(timerRef.current); }; }, []);
+
+  var delayPhase = function (next, ms) {
+    timerRef.current = setTimeout(function () { setPhase(next); }, ms || 700);
+  };
+
+  var handleStep1 = function () { setPhase("step1-replied"); delayPhase("step2", 600); };
+  var handleVideoWatched = function () { setPhase("step2-watched"); delayPhase("step3", 800); };
+  var handleStep3 = function () { setPhase("step3-replied"); delayPhase("step4", 600); };
+  var handleVerPerguntas = function () { setPhase("step4-replied"); delayPhase("step5", 500); };
+  var handleStartRecording = function () { setPhase("step5-recording"); };
+  var handleAudioDone = function () { setPhase("step5-audio-sent"); delayPhase("step6a", 800); };
+
+  var _cardShown = useState(false);
+  var cardShown = _cardShown[0];
+  var setCardShown = _cardShown[1];
+
+  useEffect(function () {
+    if (phase === "step6a" && !cardShown) {
+      var t = setTimeout(function () { setPhase("step6b"); setCardShown(true); }, 1200);
+      return function () { clearTimeout(t); };
+    }
+  }, [phase, cardShown]);
+
+  var handleReset = function () {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setPhase("step1");
+    setCardShown(false);
+  };
+
+  var stages = [
+    "step1", "step1-replied",
+    "step2", "step2-watched",
+    "step3", "step3-replied",
+    "step4", "step4-replied",
+    "step5", "step5-recording", "step5-audio-sent",
+    "step6a", "step6b"
+  ];
+  var past = function (s) { return stages.indexOf(phase) >= stages.indexOf(s); };
+  var at = function (s) { return phase === s; };
+
+  return (
+    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "24px 0", minHeight: "100vh", background: "#f0f0f0" }}>
+      <div style={{ width: 380, maxHeight: "calc(100vh - 48px)", height: 720, background: "#ECE5DD", borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.15)", display: "flex", flexDirection: "column", position: "relative" }}>
+
+        <div style={{ background: "#075E54", padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <div onClick={handleReset} style={{ fontSize: 18, color: "#fff", cursor: "pointer" }}>←</div>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg, #25D366, #128C7E)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", fontWeight: 700 }}>C</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: "#fff", fontSize: 16, fontWeight: 600 }}>Collective</div>
+            <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 12 }}>online</div>
+          </div>
+        </div>
+
+        <div style={{ background: "#128C7E", padding: "6px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>
+            Family View — {PARENT} ({STUDENT}'s mãe)
+          </div>
+          <button onClick={handleReset} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 10, color: "#fff", fontSize: 10, padding: "3px 8px", cursor: "pointer" }}>
+            ↻ Reset
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", padding: "10px 0 4px" }}>
+          <span style={{ background: "#E1D8CC", color: "#6B5E4F", fontSize: 11, padding: "4px 12px", borderRadius: 6 }}>
+            SEXTA-FEIRA, 11 DE ABRIL
+          </span>
+        </div>
+
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "6px 14px 90px", display: "flex", flexDirection: "column", gap: 6 }}>
+
+          <BotBubble text={"Oi " + PARENT + "! Quer ver o resumo da semana com as evidências de aprendizagem da " + STUDENT + "?"} time="18:32" meta="Mensagem template" />
+          {at("step1") && <div style={{ marginLeft: 4 }}><GreenBtn label="Quero" onClick={handleStep1} /></div>}
+          {past("step1-replied") && <ParentBubble text="Quero" time="18:32" />}
+          {at("step1-replied") && <TypingDots />}
+
+          {past("step2") && (
+            <MontageCard student={STUDENT} teacher={TEACHER} group={GROUP} caption={CAPTION_PT} isActive={at("step2")} onWatched={handleVideoWatched} scrollDown={scrollDown} />
+          )}
+          {at("step2-watched") && <TypingDots />}
+
+          {past("step3") && (
+            <div>
+              <BotBubble text={"Quer aproveitar esse momento para reforçar o aprendizado em casa? Temos 3 ideias bem simples para você 😊"} time="18:34" />
+              {at("step3") && <div style={{ marginLeft: 4, marginTop: 2 }}><GreenBtn label="Quero" onClick={handleStep3} /></div>}
+            </div>
+          )}
+          {past("step3-replied") && !at("step3") && <ParentBubble text="Quero" time="18:34" />}
+          {at("step3-replied") && <TypingDots />}
+
+          {past("step4") && (
+            <div>
+              <BotBubble text={"Assista ao vídeo com a " + STUDENT + " e conversem usando 3 perguntas especiais.\n\nDepois, escolha a forma mais simples de responder:\n\n💌 Reagir com um emoji que mostre como ela se sentiu ao ver o vídeo.\n⏺️ Gravar e enviar as respostas dela.\n💬 Enviar uma mensagem ou áudio com suas impressões ou dúvidas para a gente responder."} time="18:35" />
+              {at("step4") && <div style={{ marginLeft: 4, marginTop: 2 }}><GreenBtn label="Ver as perguntas" onClick={handleVerPerguntas} /></div>}
+            </div>
+          )}
+          {past("step4-replied") && !at("step4") && <ParentBubble text="Ver as perguntas" time="18:35" />}
+          {at("step4-replied") && <TypingDots />}
+
+          {past("step5") && (
+            <div style={{ alignSelf: "flex-start", maxWidth: "90%", animation: at("step5") ? "fadeUp 0.3s ease" : "none" }}>
+              <div style={{ background: "#fff", borderRadius: "2px 12px 12px 12px", padding: 14, boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+                  <QuestionRow num="1" text="O que você estava fazendo nessa foto ou vídeo?" />
+                  <QuestionRow num="2" text="O que você acha que aprendeu com essa atividade?" />
+                  <QuestionRow num="3" text="Qual foi a parte que você mais gostou? Por quê?" />
+                </div>
+                {at("step5") && (
+                  <div>
+                    <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>Escolha como responder:</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <div style={{ flex: 1, background: "#f5f5f5", border: "1.5px solid #e0e0e0", borderRadius: 10, padding: "8px 4px", textAlign: "center", opacity: 0.5 }}>
+                        <div style={{ fontSize: 20 }}>💌</div>
+                        <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Emoji</div>
+                        <div style={{ fontSize: 8, color: "#bbb", marginTop: 1 }}>em breve</div>
+                      </div>
+                      <button onClick={handleStartRecording} style={{ flex: 1, background: "#f0f9f0", border: "2px solid #25D366", borderRadius: 10, padding: "8px 4px", textAlign: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,211,102,0.2)" }}>
+                        <div style={{ fontSize: 20 }}>⏺️</div>
+                        <div style={{ fontSize: 10, fontWeight: 600, color: "#075E54", marginTop: 2 }}>Gravar {STUDENT}</div>
+                      </button>
+                      <div style={{ flex: 1, background: "#f5f5f5", border: "1.5px solid #e0e0e0", borderRadius: 10, padding: "8px 4px", textAlign: "center", opacity: 0.5 }}>
+                        <div style={{ fontSize: 20 }}>💬</div>
+                        <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Mensagem</div>
+                        <div style={{ fontSize: 8, color: "#bbb", marginTop: 1 }}>em breve</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: "#aaa", textAlign: "right", marginTop: 8 }}>18:35</div>
+              </div>
+            </div>
+          )}
+
+          {at("step5-recording") && (
+            <div style={{ animation: "fadeUp 0.3s ease", marginTop: 4 }}>
+              <AudioRecorder prompt={"Grave as respostas de " + STUDENT + " às perguntas (10–30 segundos)"} onComplete={handleAudioDone} />
+            </div>
+          )}
+          {past("step5-audio-sent") && <AudioBubbleOut time="18:36" duration={15} label={"Respostas de " + STUDENT} />}
+          {at("step5-audio-sent") && <TypingDots />}
+
+          {past("step6a") && (
+            <div style={{ animation: "fadeUp 0.4s ease" }}>
+              <BotBubble text={"Muito obrigada por compartilhar 💛\n\n" + TEACHER + ", a educadora da " + STUDENT + ", valoriza muito a conexão entre escola e família. Vai ficar muito contente em receber o retorno de vocês.\n\nSeguimos juntos no desenvolvimento da " + STUDENT + "!"} time="18:37" />
+            </div>
+          )}
+          {at("step6a") && <TypingDots />}
+
+          {past("step6b") && <QuoteCard />}
+
+        </div>
+
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#F0F0F0", padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ flex: 1, background: "#fff", borderRadius: 20, padding: "10px 16px", fontSize: 14, color: "#bbb" }}>Mensagem</div>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#075E54", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 16 }}>🎤</span>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
+    </div>
+  );
+}
+
+function QuoteCard() {
+  var _shared = useState(false);
+  var shared = _shared[0];
+  var setShared = _shared[1];
+
+  return (
+    <div style={{ alignSelf: "flex-start", maxWidth: "92%", animation: "scaleIn 0.4s ease", marginTop: 2 }}>
+      <div style={{ background: "#fff", borderRadius: "2px 12px 12px 12px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <div style={{ background: "linear-gradient(155deg, #FDFCFA 0%, #F7F4EF 40%, #F2EDE5 100%)", padding: "28px 22px 20px", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #075E54, #25D366, #075E54)" }} />
+          <div style={{ fontSize: 48, lineHeight: 1, color: "#075E54", opacity: 0.15, fontFamily: "Georgia, 'Times New Roman', serif", marginBottom: -8, marginLeft: -4 }}>"</div>
+          <div style={{ fontSize: 14, lineHeight: 1.65, color: "#2C2C2C", fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic", padding: "0 2px", marginBottom: 18 }}>
+            A participação dos pais é o principal fator preditor do sucesso acadêmico dos estudantes, independentemente de raça, nível socioeconômico, etnia ou contexto cultural.
+          </div>
+          <div style={{ width: 40, height: 1.5, background: "#075E54", opacity: 0.25, marginBottom: 12 }} />
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", letterSpacing: "0.01em" }}>Dra Karen Mapp</div>
+            <div style={{ fontSize: 11, color: "#888", marginTop: 2, lineHeight: 1.4 }}>Harvard Graduate School of Education</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 5, opacity: 0.35 }}>
+            <div style={{ width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg, #075E54, #25D366)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, color: "#fff", fontWeight: 800 }}>C</div>
+            <div style={{ fontSize: 10, color: "#555", letterSpacing: "0.06em" }}>collective</div>
+          </div>
+        </div>
+        <div style={{ padding: "10px 14px 12px" }}>
+          {!shared ? (
+            <div>
+              <div style={{ fontSize: 12.5, color: "#555", marginBottom: 8 }}>Gostou? Compartilhe com outras famílias 💛</div>
+              <button onClick={function () { setShared(true); }} style={{ width: "100%", background: "#fff", border: "1.5px solid #25D366", borderRadius: 20, padding: "9px 16px", fontSize: 13, fontWeight: 600, color: "#075E54", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                📲 Compartilhar
+              </button>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", animation: "fadeUp 0.3s ease" }}>
+              <div style={{ fontSize: 13, color: "#25D366", fontWeight: 600 }}>✓ Compartilhado!</div>
+              <div style={{ fontSize: 11, color: "#999", marginTop: 2 }}>Obrigada por espalhar essa mensagem</div>
+            </div>
+          )}
+          <div style={{ fontSize: 11, color: "#aaa", textAlign: "right", marginTop: 6 }}>18:37</div>
+        </div>
+      </div>
+      <div style={{ textAlign: "center", padding: "16px 0 8px", animation: "fadeUp 0.4s ease 0.3s both" }}>
+        <div style={{ background: "#f0f9f0", borderRadius: 12, padding: "12px 16px", display: "inline-block" }}>
+          <div style={{ fontSize: 13, color: "#075E54", fontWeight: 600 }}>✅ Fluxo completo</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MontageCard(props) {
+  var student = props.student; var teacher = props.teacher; var group = props.group;
+  var caption = props.caption; var isActive = props.isActive;
+  var onWatched = props.onWatched; var scrollDown = props.scrollDown;
+
+  var _state = useState("idle"); var state = _state[0]; var setState = _state[1];
+  var _showDone = useState(false); var showDone = _showDone[0]; var setShowDone = _showDone[1];
+  var doneTimer = useRef(null);
+
+  var handlePlay = function () { setState("playing"); if (scrollDown) scrollDown(); doneTimer.current = setTimeout(function () { setShowDone(true); }, 5000); };
+  var handleEnd = function () { setState("ended"); setShowDone(true); };
+
+  useEffect(function () { return function () { if (doneTimer.current) clearTimeout(doneTimer.current); }; }, []);
+  useEffect(function () { if (state === "playing" && scrollDown) setTimeout(scrollDown, 100); }, [state]);
+
+  return (
+    <div style={{ alignSelf: "flex-start", maxWidth: "92%", marginTop: 4, animation: isActive ? "scaleIn 0.35s ease" : "none" }}>
+      <div style={{ background: "#fff", borderRadius: "2px 12px 12px 12px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+        <video
+          src="/sofia.week1.demo.mp4"
+          controls
+          onPlay={onWatched}
+          style={{ width: "100%", height: "auto", borderRadius: 8, background: "#000" }}
+        />
+        <div style={{ padding: "10px 12px 8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #128C7E, #25D366)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 700, flexShrink: 0 }}>{teacher.charAt(0)}</div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#075E54", lineHeight: 1.2 }}>Teacher {teacher}</div>
+              <div style={{ fontSize: 9, color: "#999", lineHeight: 1.2 }}>{group} · Semana 1</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 12.5, color: "#444", lineHeight: 1.55, marginBottom: 2 }}>{caption}</div>
+          <div style={{ fontSize: 10, color: "#888", fontStyle: "italic", marginTop: 4 }}>— Teacher {teacher}, {group}</div>
+          <div style={{ fontSize: 11, color: "#aaa", textAlign: "right", marginTop: 4 }}>18:33</div>
+        </div>
+      </div>
+      {isActive && state === "idle" && <div style={{ marginTop: 6 }}><GreenBtn label="▶ Assistir montagem" onClick={handlePlay} /></div>}
+      {isActive && showDone && <div style={{ marginTop: 6, animation: "fadeUp 0.3s ease" }}><GreenBtn label="Já assisti ✔" onClick={onWatched} /></div>}
+    </div>
+  );
+}
+
+function MontagePlayer(props) {
+  var state = props.state; var onPlay = props.onPlay; var onEnd = props.onEnd;
+  var student = props.student; var teacher = props.teacher; var group = props.group;
+
+  var _progress = useState(0); var progress = _progress[0]; var setProgress = _progress[1];
+  var _mi = useState(0); var mi = _mi[0]; var setMi = _mi[1];
+  var _fade = useState(true); var fade = _fade[0]; var setFade = _fade[1];
+  var intRef = useRef(null); var momRef = useRef(null);
+
+  var DUR = 12; var MI = DUR / MOMENTS.length;
+
+  useEffect(function () {
+    if (state !== "playing") return;
+    setProgress(0); setMi(0); setFade(true);
+    var start = Date.now();
+    momRef.current = setInterval(function () {
+      setFade(false);
+      setTimeout(function () { setMi(function (p) { return p < MOMENTS.length - 1 ? p + 1 : p; }); setFade(true); }, 300);
+    }, MI * 1000);
+    intRef.current = setInterval(function () {
+      var pct = Math.min((Date.now() - start) / 1000 / DUR, 1);
+      setProgress(pct);
+      if (pct >= 1) { clearInterval(intRef.current); clearInterval(momRef.current); if (onEnd) onEnd(); }
+    }, 50);
+    return function () { if (intRef.current) clearInterval(intRef.current); if (momRef.current) clearInterval(momRef.current); };
+  }, [state]);
+
+  var fmt = function (s) { var mm = Math.floor(s / 60); var ss = Math.floor(s % 60); return mm + ":" + (ss < 10 ? "0" : "") + ss; };
+  var m = MOMENTS[mi];
+
+  if (state === "idle") {
+    return (
+      <div onClick={onPlay} style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", cursor: "pointer", background: "linear-gradient(160deg, #1a3a2a 0%, #0d2818 40%, #0a1f14 100%)" }}>
+        <div style={{ position: "absolute", top: 14, left: 14, fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: "0.12em", textTransform: "uppercase", zIndex: 2 }}>COLLECTIVE</div>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", zIndex: 2 }}>
+          <div style={{ fontSize: 17, color: "#fff", fontWeight: 600, marginBottom: 4, textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>Semana 1 — {student}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 16, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>Teacher {teacher} · {group} · Abril 2026</div>
+          <div style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(37,211,102,0.92)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", boxShadow: "0 4px 24px rgba(37,211,102,0.4)" }}>
+            <div style={{ width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderLeft: "18px solid #fff", marginLeft: 3 }} />
+          </div>
+        </div>
+        <div style={{ position: "absolute", bottom: 14, left: 14, display: "flex", alignItems: "center", gap: 6, zIndex: 2 }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>5 momentos</span>
+          <div style={{ display: "flex", gap: 3 }}>{[0,1,2,3,4].map(function (i) { return <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.3)" }} />; })}</div>
+        </div>
+        <div style={{ position: "absolute", bottom: 14, right: 14, fontSize: 11, color: "rgba(255,255,255,0.4)", zIndex: 2 }}>0:12</div>
+      </div>
+    );
+  }
+
+  if (state === "playing") {
+    return (
+      <div style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", background: m.bg, transition: "background 0.5s" }}>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)" }} />
+        <div style={{ position: "absolute", top: 14, left: 14, fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "0.12em", textTransform: "uppercase", zIndex: 2 }}>COLLECTIVE</div>
+        <div style={{ position: "absolute", top: 14, right: 14, display: "flex", gap: 4, zIndex: 2 }}>
+          {MOMENTS.map(function (mo, i) { return <div key={i} style={{ width: 8, height: 8, borderRadius: 4, background: i === mi ? "#25D366" : i < mi ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)", transition: "all 0.3s" }} />; })}
+        </div>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", opacity: fade ? 1 : 0, transition: "opacity 0.35s ease", zIndex: 2 }}>
+          <div style={{ width: 80, height: 80, borderRadius: 14, margin: "0 auto 12px", overflow: "hidden", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.15)", fontSize: 36 }}>{m.emoji}</div>
+          <div style={{ fontSize: 15, color: "#fff", fontWeight: 600, marginBottom: 3, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>{m.label}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>{m.desc}</div>
+        </div>
+        <div style={{ position: "absolute", bottom: 32, left: 0, right: 0, textAlign: "center", zIndex: 2 }}>
+          <span style={{ background: "rgba(0,0,0,0.35)", borderRadius: 12, padding: "4px 12px", fontSize: 11, color: "rgba(255,255,255,0.7)" }}>{student} · {m.label}</span>
+        </div>
+        <div style={{ position: "absolute", bottom: 18, left: 14, display: "flex", alignItems: "flex-end", gap: 2, height: 14, zIndex: 2 }}>
+          {Array.from({ length: 12 }, function (_, i) { var h = 4 + Math.sin(i * 1.2 + progress * 30) * 5 + Math.sin(i * 0.7 + progress * 20) * 3; return <div key={i} style={{ width: 2.5, height: Math.max(3, h), borderRadius: 1.5, background: "#25D366", opacity: 0.7 }} />; })}
+        </div>
+        <div style={{ position: "absolute", bottom: 18, right: 14, fontSize: 11, color: "rgba(255,255,255,0.5)", zIndex: 2 }}>{fmt(progress * DUR)} / {fmt(DUR)}</div>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.15)", zIndex: 2 }}>
+          <div style={{ height: "100%", background: "#25D366", width: (progress * 100) + "%", borderRadius: "0 2px 2px 0", transition: "width 0.05s linear" }} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", background: "linear-gradient(160deg, #1a3a2a 0%, #0d2818 40%, #0a1f14 100%)" }}>
+      <div style={{ position: "absolute", top: 14, left: 14, fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: "0.12em", textTransform: "uppercase" }}>COLLECTIVE</div>
+      <div style={{ position: "absolute", top: 14, right: 14, display: "flex", gap: 4 }}>
+        {MOMENTS.map(function (mo, i) { return <div key={i} style={{ width: 8, height: 8, borderRadius: 4, background: "#25D366" }} />; })}
+      </div>
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center" }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>✨</div>
+        <div style={{ fontSize: 17, color: "#fff", fontWeight: 600, marginBottom: 4 }}>Semana 1 completa!</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>5 momentos · Teacher {teacher}</div>
+      </div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: "#25D366" }} />
+    </div>
+  );
+}
+
+function AudioRecorder(props) {
+  var onComplete = props.onComplete; var prompt = props.prompt;
+  var _st = useState("idle"); var st = _st[0]; var setSt = _st[1];
+  var _sec = useState(0); var sec = _sec[0]; var setSec = _sec[1];
+  var intRef = useRef(null);
+
+  var startRec = function () { setSt("recording"); setSec(0); var count = 0; intRef.current = setInterval(function () { count++; setSec(count); if (count >= 18) { clearInterval(intRef.current); setSt("recorded"); } }, 1000); };
+  var stopRec = function () { clearInterval(intRef.current); setSt("recorded"); };
+  useEffect(function () { return function () { if (intRef.current) clearInterval(intRef.current); }; }, []);
+  var fmt = function (s) { return Math.floor(s / 60) + ":" + (s < 10 ? "0" : "") + s; };
+
+  if (st === "idle") {
+    return (
+      <div style={{ background: "#f7f5f2", borderRadius: 12, padding: 14 }}>
+        {prompt && <div style={{ fontSize: 12, color: "#666", marginBottom: 10, lineHeight: 1.5 }}>{prompt}</div>}
+        <button onClick={startRec} style={{ width: "100%", background: "#075E54", color: "#fff", border: "none", borderRadius: 20, padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff4444" }} /> Gravar áudio
+        </button>
+      </div>
+    );
+  }
+
+  if (st === "recording") {
+    var bars = []; for (var i = 0; i < 30; i++) bars.push(6 + Math.sin(i * 0.8 + sec * 2) * 10 + (i % 5) * 2);
+    return (
+      <div style={{ background: "#fff5f5", borderRadius: 12, padding: 14, border: "1.5px solid #ff4444" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff4444", animation: "pulse 1s infinite" }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#cc0000" }}>Gravando…</div>
+          <div style={{ fontSize: 13, color: "#999", marginLeft: "auto" }}>{fmt(sec)}</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 2, height: 28, marginBottom: 10 }}>
+          {bars.map(function (bh, bi) { return <div key={bi} style={{ width: 3, height: Math.max(4, bh), borderRadius: 2, background: "#ff4444", opacity: 0.6 }} />; })}
+        </div>
+        <button onClick={stopRec} style={{ width: "100%", background: "#ff4444", color: "#fff", border: "none", borderRadius: 20, padding: "10px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⏹ Parar</button>
+      </div>
+    );
+  }
+
+  var staticBars = []; for (var j = 0; j < 36; j++) staticBars.push(4 + Math.sin(j * 0.6) * 8 + (j % 3) * 2);
+  return (
+    <div style={{ background: "#f0f9f0", borderRadius: 12, padding: 14, border: "1.5px solid #25D366" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <PlayCircle />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 1, height: 20 }}>
+          {staticBars.map(function (bh, bi) { return <div key={bi} style={{ width: 2.5, height: Math.max(3, bh), borderRadius: 1.5, background: "#25D366", opacity: 0.6 }} />; })}
+        </div>
+        <div style={{ fontSize: 12, color: "#999" }}>{fmt(sec)}</div>
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={function () { setSt("idle"); setSec(0); }} style={{ flex: 1, background: "#f7f5f2", color: "#666", border: "1px solid #ddd", borderRadius: 20, padding: "8px 12px", fontSize: 12, cursor: "pointer" }}>Regravar</button>
+        <button onClick={function () { if (onComplete) onComplete(sec); }} style={{ flex: 2, background: "#25D366", color: "#fff", border: "none", borderRadius: 20, padding: "8px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Enviar →</button>
+      </div>
+    </div>
+  );
+}
+
+function PlayCircle() {
+  return (
+    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 0, height: 0, borderTop: "6px solid transparent", borderBottom: "6px solid transparent", borderLeft: "10px solid #fff", marginLeft: 2 }} />
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div style={{ alignSelf: "flex-start", background: "#fff", borderRadius: "10px 10px 10px 2px", padding: "10px 14px", display: "flex", gap: 4, animation: "fadeUp 0.2s ease" }}>
+      <Dot n={0} /><Dot n={0.2} /><Dot n={0.4} />
+    </div>
+  );
+}
+
+function Dot(props) { return <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#999", animation: "bounce 1.4s infinite", animationDelay: props.n + "s" }} />; }
+
+function BotBubble(props) {
+  return (
+    <div style={{ alignSelf: "flex-start", maxWidth: "85%", animation: "fadeUp 0.3s ease" }}>
+      <div style={{ background: "#fff", borderRadius: "2px 12px 12px 12px", padding: "9px 12px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
+        <div style={{ fontSize: 14.5, lineHeight: 1.55, color: "#1a1a1a", whiteSpace: "pre-wrap" }}>{props.text}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 3 }}>
+          {props.meta ? <div style={{ fontSize: 10, color: "#bbb" }}>{props.meta}</div> : null}
+          <div style={{ fontSize: 11, color: "#aaa", textAlign: "right", flex: 1 }}>{props.time}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ParentBubble(props) {
+  return (
+    <div style={{ alignSelf: "flex-end", maxWidth: "70%", animation: "fadeUp 0.3s ease", marginTop: 2 }}>
+      <div style={{ background: "#DCF8C6", borderRadius: "12px 2px 12px 12px", padding: "9px 12px" }}>
+        <div style={{ fontSize: 14.5, lineHeight: 1.55, color: "#1a1a1a" }}>{props.text}</div>
+        <div style={{ fontSize: 11, color: "#7faa7f", textAlign: "right", marginTop: 2 }}>{props.time} ✓✓</div>
+      </div>
+    </div>
+  );
+}
+
+function AudioBubbleOut(props) {
+  var bars = []; for (var i = 0; i < 28; i++) bars.push(3 + Math.sin(i * 0.5) * 6 + (i % 3) * 1.5);
+  var fmt = function (s) { return Math.floor(s / 60) + ":" + (s < 10 ? "0" : "") + s; };
+  return (
+    <div style={{ alignSelf: "flex-end", maxWidth: "75%", animation: "fadeUp 0.3s ease", marginTop: 4 }}>
+      <div style={{ background: "#DCF8C6", borderRadius: "12px 2px 12px 12px", padding: "9px 12px" }}>
+        {props.label && <div style={{ fontSize: 11, color: "#7faa7f", marginBottom: 4 }}>{props.label}</div>}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <PlayCircle />
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 1, height: 16 }}>
+            {bars.map(function (h, idx) { return <div key={idx} style={{ width: 2, height: Math.max(3, h), borderRadius: 1, background: "#7faa7f", opacity: 0.7 }} />; })}
+          </div>
+          <div style={{ fontSize: 11, color: "#7faa7f" }}>{fmt(props.duration || 15)}</div>
+        </div>
+        <div style={{ fontSize: 11, color: "#7faa7f", textAlign: "right", marginTop: 4 }}>{props.time} ✓✓</div>
+      </div>
+    </div>
+  );
+}
+
+function QuestionRow(props) {
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#e8f5e8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#075E54", flexShrink: 0 }}>{props.num}</div>
+      <div style={{ fontSize: 13, color: "#333", lineHeight: 1.5, paddingTop: 2 }}>{props.text}</div>
+    </div>
+  );
+}
+
+function GreenBtn(props) {
+  return (
+    <button onClick={props.onClick} style={{ background: "#25D366", color: "#fff", border: "none", borderRadius: 18, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+      {props.label}
+    </button>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<FamilySim />);
+</script>
+</body>
+</html>
